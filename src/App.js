@@ -786,13 +786,19 @@ export default function App() {
   };
 
   const startCamera = async () => {
+  if (typeof window === "undefined" || !navigator.mediaDevices) {
+    alert("Camera not supported in this environment");
+    return;
+  }
+
+  try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     setVideoStream(stream);
     setCameraOn(true);
-    setTimeout(() => {
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    }, 100);
-  };
+  } catch (err) {
+    alert("Camera access denied ❌");
+  }
+};
 
   const capturePhoto = () => {
     const video = videoRef.current;
