@@ -1159,11 +1159,87 @@ export default function App() {
     link.click();
   };
 
-  const handlePrint = () => {
-    const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>Print</title><style>@page{size:A4;margin:0}body{margin:0}img{width:210mm;height:297mm;object-fit:contain}</style></head><body><img src="${finalSheet}" /></body></html>`);
-    w.document.close();
-    setTimeout(() => { w.print(); w.close(); }, 500);
+  const handlePrint = async () => {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      try {
+        // Convert dataURL → Blob → File
+        const res = await fetch(finalSheet);
+        const blob = await res.blob();
+        const file = new File([blob], "passport-photo.png", { type: "image/png" });
+
+        // Try Web Share API (native share/print on mobile)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: "Passport Photo - A4 Sheet",
+            text: "Print karne ke liye yeh image open karo aur Print select karo.",
+            files: [file],
+          });
+          return;
+        }
+
+        // Fallback: download + instruct user
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "passport-photo-print.png";
+        a.click();
+        URL.revokeObjectURL(url);
+        setTimeout(() => {
+          alert("📥 Image download ho gayi!\n\nPrint kaise karein:\n1. Gallery/Files mein jaao\n2. Image open karo\n3. Share → Print select karo");
+        }, 500);
+
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          // User ne share cancel nahi kiya — fallback to download
+          const res = await fetch(finalSheet);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "passport-photo-print.png";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }
+    } else {
+      // Desktop: hidden iframe print
+      const existing = document.getElementById("print-iframe");
+      if (existing) existing.remove();
+
+      const iframe = document.createElement("iframe");
+      iframe.id = "print-iframe";
+      iframe.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;opacity:0;";
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(`<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      @page { size: A4 portrait; margin: 0; }
+      html, body { width:210mm; height:297mm; background:white; }
+      img { width:210mm; height:297mm; display:block; object-fit:contain; }
+    </style>
+  </head>
+  <body><img src="${finalSheet}" /></body>
+</html>`);
+      doc.close();
+
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (e) {
+          handleDownload();
+        }
+        setTimeout(() => iframe.remove(), 5000);
+      };
+    }
   };
 
   return (
@@ -1337,7 +1413,7 @@ export default function App() {
                     ↓ &nbsp; Download
                   </button>
                   <button className="neon-btn btn-cyan" onClick={handlePrint} style={{ width: "100%" }}>
-                    ⬡ &nbsp; Print A4
+                    {/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? "⬡ \u00a0 Share & Print" : "⬡ \u00a0 Print A4"}
                   </button>
                 </div>
               </>
