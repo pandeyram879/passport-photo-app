@@ -1160,10 +1160,50 @@ export default function App() {
   };
 
   const handlePrint = () => {
-    const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>Print</title><style>@page{size:A4;margin:0}body{margin:0}img{width:210mm;height:297mm;object-fit:contain}</style></head><body><img src="${finalSheet}" /></body></html>`);
-    w.document.close();
-    setTimeout(() => { w.print(); w.close(); }, 500);
+    // Convert dataURL to blob then create blob URL
+    // This fixes "problem printing" on mobile Chrome
+    fetch(finalSheet)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const blobUrl = URL.createObjectURL(blob);
+        const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Passport Photo Print</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      @page { size: A4 portrait; margin: 0; }
+      html, body { width: 210mm; height: 297mm; background: white; }
+      img { width: 210mm; height: 297mm; display: block; object-fit: contain; }
+    </style>
+  </head>
+  <body>
+    <img src="${blobUrl}" />
+    <script>
+      window.onload = function() {
+        setTimeout(function() {
+          window.print();
+        }, 300);
+      };
+    </script>
+  </body>
+</html>`;
+        const printBlob = new Blob([html], { type: "text/html" });
+        const printUrl = URL.createObjectURL(printBlob);
+        const win = window.open(printUrl, "_blank");
+        if (!win) {
+          // Popup blocked — fallback: download the image
+          alert("Print popup blocked. Downloading image instead — open it and print from your gallery.");
+          handleDownload();
+        }
+        // Cleanup blob URLs after delay
+        setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
+          URL.revokeObjectURL(printUrl);
+        }, 60000);
+      });
   };
 
   return (
