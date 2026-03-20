@@ -376,6 +376,8 @@ body {
   border-radius: 12px;
   border: 1px solid rgba(191,0,255,0.4);
   box-shadow: 0 0 20px rgba(191,0,255,0.2);
+  /* NO mirror — normal video */
+  transform: none;
 }
 
 .corner-decor {
@@ -540,180 +542,57 @@ body {
   }
 }
 
-/* ===========================
-   RESPONSIVE — TABLET (≤768px)
-   =========================== */
 @media (max-width: 768px) {
-  .two-col-layout {
-    flex-direction: column;
-  }
-  .right-panel {
-    position: static;
-  }
-  .neon-title {
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-  }
-  .subtitle {
-    font-size: 0.65rem;
-    letter-spacing: 4px;
-  }
-  .glass-card {
-    border-radius: 18px;
-    padding: 20px !important;
-  }
-  .controls-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .neon-input {
-    width: 100%;
-    font-size: 0.75rem;
-  }
-  .action-btns {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .neon-btn {
-    font-size: 0.65rem;
-    padding: 11px 16px;
-    letter-spacing: 1px;
-  }
-  .bg-option {
-    width: 42px;
-    height: 42px;
-  }
-  .upload-zone {
-    padding: 22px 16px;
-  }
-  .upload-text {
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-  }
-  .upload-icon {
-    font-size: 2rem;
-  }
+  .two-col-layout { flex-direction: column; }
+  .right-panel { position: static; }
+  .neon-title { font-size: 1.2rem; letter-spacing: 2px; }
+  .subtitle { font-size: 0.65rem; letter-spacing: 4px; }
+  .glass-card { border-radius: 18px; padding: 20px !important; }
+  .controls-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .neon-input { width: 100%; font-size: 0.75rem; }
+  .action-btns { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .neon-btn { font-size: 0.65rem; padding: 11px 16px; letter-spacing: 1px; }
+  .bg-option { width: 42px; height: 42px; }
+  .upload-zone { padding: 22px 16px; }
+  .upload-text { font-size: 0.6rem; letter-spacing: 2px; }
+  .upload-icon { font-size: 2rem; }
 }
 
-/* ===========================
-   RESPONSIVE — MOBILE (≤480px)
-   =========================== */
 @media (max-width: 480px) {
-  .neon-title {
-    font-size: 1rem;
-    letter-spacing: 1.5px;
-  }
-  .subtitle {
-    font-size: 0.6rem;
-    letter-spacing: 3px;
-  }
-  .glass-card {
-    border-radius: 14px;
-    padding: 16px !important;
-    gap: 14px !important;
-  }
-  .controls-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
-  }
-  .neon-input {
-    width: 100%;
-    font-size: 0.7rem;
-    padding: 7px 8px;
-  }
-  .neon-label {
-    font-size: 0.5rem;
-    letter-spacing: 1.5px;
-  }
-  .action-btns {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .neon-btn {
-    font-size: 0.6rem;
-    padding: 10px 12px;
-    letter-spacing: 1px;
-  }
-  .bg-option {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-  }
-  .bg-selector {
-    gap: 8px;
-  }
-  .upload-zone {
-    padding: 18px 12px;
-  }
-  .upload-text {
-    font-size: 0.55rem;
-    letter-spacing: 1.5px;
-  }
-  .upload-icon {
-    font-size: 1.8rem;
-  }
-  .corner-decor {
-    width: 14px;
-    height: 14px;
-  }
-  .photo-label {
-    font-size: 0.5rem;
-    letter-spacing: 2px;
-  }
+  .neon-title { font-size: 1rem; letter-spacing: 1.5px; }
+  .subtitle { font-size: 0.6rem; letter-spacing: 3px; }
+  .glass-card { border-radius: 14px; padding: 16px !important; gap: 14px !important; }
+  .controls-grid { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .neon-input { width: 100%; font-size: 0.7rem; padding: 7px 8px; }
+  .neon-label { font-size: 0.5rem; letter-spacing: 1.5px; }
+  .action-btns { grid-template-columns: 1fr; gap: 8px; }
+  .neon-btn { font-size: 0.6rem; padding: 10px 12px; letter-spacing: 1px; }
+  .bg-option { width: 38px; height: 38px; border-radius: 8px; }
+  .bg-selector { gap: 8px; }
+  .upload-zone { padding: 18px 12px; }
+  .upload-text { font-size: 0.55rem; letter-spacing: 1.5px; }
+  .upload-icon { font-size: 1.8rem; }
+  .corner-decor { width: 14px; height: 14px; }
+  .photo-label { font-size: 0.5rem; letter-spacing: 2px; }
 }
 
-/* ===========================
-   RESPONSIVE — SMALL (≤360px)
-   =========================== */
 @media (max-width: 360px) {
-  .neon-title {
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-  }
-  .controls-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-  .neon-input {
-    font-size: 0.65rem;
-    padding: 6px 8px;
-  }
-  .glass-card {
-    padding: 14px !important;
-  }
+  .neon-title { font-size: 0.85rem; letter-spacing: 1px; }
+  .controls-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .neon-input { font-size: 0.65rem; padding: 6px 8px; }
+  .glass-card { padding: 14px !important; }
 }
 
-/* Touch devices — remove hover-only effects */
 @media (hover: none) {
-  .glass-card:hover {
-    border-color: var(--glass-border);
-    box-shadow: none;
-  }
-  .neon-btn:hover::before {
-    opacity: 0;
-  }
-  .upload-zone:hover::before {
-    opacity: 0;
-  }
-  .upload-zone:hover {
-    border-color: rgba(0,245,255,0.3);
-    background: rgba(0,245,255,0.02);
-    box-shadow: none;
-  }
-  .bg-option:hover {
-    transform: none;
-    border-color: rgba(255,255,255,0.15);
-  }
-  .bg-option.selected {
-    transform: scale(1.05);
-  }
+  .glass-card:hover { border-color: var(--glass-border); box-shadow: none; }
+  .neon-btn:hover::before { opacity: 0; }
+  .upload-zone:hover::before { opacity: 0; }
+  .upload-zone:hover { border-color: rgba(0,245,255,0.3); background: rgba(0,245,255,0.02); box-shadow: none; }
+  .bg-option:hover { transform: none; border-color: rgba(255,255,255,0.15); }
+  .bg-option.selected { transform: scale(1.05); }
 }
 
-/* Prevent horizontal overflow on all screens */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
+html, body { overflow-x: hidden; max-width: 100vw; }
 
 /* ===========================
    CROP MODAL
@@ -786,8 +665,14 @@ html, body {
   text-align: center;
   letter-spacing: 1px;
 }
-`;
 
+/* Camera controls row */
+.camera-controls {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+`;
 
 export default function App() {
   const [image, setImage] = useState(null);
@@ -801,6 +686,8 @@ export default function App() {
   const [cameraOn, setCameraOn] = useState(false);
   const [videoStream, setVideoStream] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  // ✅ NEW: track which camera is active
+  const [facingMode, setFacingMode] = useState("user");
   const videoRef = useRef(null);
 
   // Crop states
@@ -827,13 +714,53 @@ export default function App() {
     { color: "red", display: "#cc0000", label: "Red" },
   ];
 
-  // ✅ CAMERA FIX: video element DOM mein aane ke baad stream attach karo
+  // ✅ Attach stream to video element whenever cameraOn or videoStream changes
   useEffect(() => {
     if (cameraOn && videoStream && videoRef.current) {
       videoRef.current.srcObject = videoStream;
       videoRef.current.play().catch(() => {});
     }
   }, [cameraOn, videoStream]);
+
+  // ✅ Start camera with given facingMode
+  const startCamera = async (facing = "user") => {
+    // Stop existing stream first
+    if (videoStream) {
+      videoStream.getTracks().forEach((t) => t.stop());
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing },
+      });
+      setFacingMode(facing);
+      setVideoStream(stream);
+      setCameraOn(true);
+    } catch (err) {
+      alert("Camera access denied or unavailable 📷");
+    }
+  };
+
+  // ✅ Switch between front and back camera
+  const switchCamera = () => {
+    const newFacing = facingMode === "user" ? "environment" : "user";
+    startCamera(newFacing);
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    // ✅ No mirror flip — draw as-is
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    canvas.toBlob((blob) => {
+      const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+      videoStream.getTracks().forEach((t) => t.stop());
+      setCameraOn(false);
+      setVideoStream(null);
+      openCropModal(file);
+    });
+  };
 
   // ── CROP LOGIC ──────────────────────────────────────────
 
@@ -860,7 +787,6 @@ export default function App() {
     s.imgNaturalH = imgEl.naturalHeight;
     s.displayW = dW;
     s.displayH = dH;
-    // Default crop: center 80%
     s.rect = { x: dW * 0.1, y: dH * 0.1, w: dW * 0.8, h: dH * 0.8 };
     drawCrop();
   };
@@ -873,47 +799,40 @@ export default function App() {
     const { displayW: dW, displayH: dH, rect } = cropStateRef.current;
     ctx.clearRect(0, 0, dW, dH);
     ctx.drawImage(img, 0, 0, dW, dH);
-    // Dark overlay outside crop
     ctx.fillStyle = "rgba(0,0,0,0.55)";
     ctx.fillRect(0, 0, dW, dH);
-    // Clear crop area
     ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
     ctx.drawImage(img, 0, 0, dW, dH);
     ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
     ctx.drawImage(img, 0, 0, dW, dH);
-    // Re-draw just crop area from image
     ctx.save();
     ctx.beginPath();
     ctx.rect(rect.x, rect.y, rect.w, rect.h);
     ctx.clip();
     ctx.drawImage(img, 0, 0, dW, dH);
     ctx.restore();
-    // Crop border
     ctx.strokeStyle = "rgba(0,245,255,0.9)";
     ctx.lineWidth = 1.5;
     ctx.setLineDash([]);
     ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-    // Rule of thirds grid
     ctx.strokeStyle = "rgba(0,245,255,0.25)";
     ctx.lineWidth = 0.5;
     for (let i = 1; i <= 2; i++) {
       ctx.beginPath(); ctx.moveTo(rect.x + (rect.w / 3) * i, rect.y); ctx.lineTo(rect.x + (rect.w / 3) * i, rect.y + rect.h); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(rect.x, rect.y + (rect.h / 3) * i); ctx.lineTo(rect.x + rect.w, rect.y + (rect.h / 3) * i); ctx.stroke();
     }
-    // Corner handles
     const hs = 8;
     const corners = [
       [rect.x, rect.y], [rect.x + rect.w, rect.y],
       [rect.x, rect.y + rect.h], [rect.x + rect.w, rect.y + rect.h],
     ];
     corners.forEach(([cx, cy]) => {
-      ctx.fillStyle = "var(--neon-cyan, #00f5ff)";
+      ctx.fillStyle = "#00f5ff";
       ctx.shadowColor = "#00f5ff";
       ctx.shadowBlur = 8;
       ctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
       ctx.shadowBlur = 0;
     });
-    // Edge handles
     const edges = [
       [rect.x + rect.w / 2, rect.y], [rect.x + rect.w / 2, rect.y + rect.h],
       [rect.x, rect.y + rect.h / 2], [rect.x + rect.w, rect.y + rect.h / 2],
@@ -960,7 +879,6 @@ export default function App() {
     } else if (x >= s.rect.x && x <= s.rect.x + s.rect.w && y >= s.rect.y && y <= s.rect.y + s.rect.h) {
       s.dragging = true;
     } else {
-      // Start new crop
       s.resizing = true; s.handle = "br";
       s.rect = { x, y, w: 0, h: 0 };
     }
@@ -976,7 +894,6 @@ export default function App() {
     const { displayW: dW, displayH: dH } = s;
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     const minSize = 20;
-
     if (s.dragging) {
       s.rect.x = clamp(s.rect.x + dx, 0, dW - s.rect.w);
       s.rect.y = clamp(s.rect.y + dy, 0, dH - s.rect.h);
@@ -1026,17 +943,14 @@ export default function App() {
     processFile(file);
   };
 
-  // ── ORIGINAL processFile (called after crop or skip) ─────
   const processFile = async (file) => {
     if (!file) return;
     setImage(URL.createObjectURL(file));
     setLoading(true);
     setFinalSheet(null);
     setRemovedBg(null);
-
     const formData = new FormData();
     formData.append("image_file", file);
-
     try {
       const res = await fetch("https://api.remove.bg/v1.0/removebg", {
         method: "POST",
@@ -1059,32 +973,6 @@ export default function App() {
     e.preventDefault();
     setDragOver(false);
     openCropModal(e.dataTransfer.files[0]);
-  };
-
-  // ✅ CAMERA FIX: sirf state set karo, useEffect srcObject handle karega
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-      setVideoStream(stream);
-      setCameraOn(true);
-    } catch (err) {
-      alert("Camera access denied or unavailable 📷");
-    }
-  };
-
-  const capturePhoto = () => {
-    const video = videoRef.current;
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    canvas.toBlob((blob) => {
-      const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-      videoStream.getTracks().forEach((t) => t.stop());
-      setCameraOn(false);
-      setVideoStream(null);
-      openCropModal(file);
-    });
   };
 
   const generateSheet = (imgUrl, copiesCount, background, w, h) => {
@@ -1117,17 +1005,11 @@ export default function App() {
 
   const handleCopiesChange = (e) => {
     const value = e.target.value;
-    // allow empty
-    if (value === "") {
-      setCopies("");
-      return;
-    }
+    if (value === "") { setCopies(""); return; }
     const num = parseInt(value);
     if (!isNaN(num)) {
       setCopies(num);
-      if (removedBg) {
-        generateSheet(removedBg, num, bgColor, customWidth, customHeight);
-      }
+      if (removedBg) generateSheet(removedBg, num, bgColor, customWidth, customHeight);
     }
   };
 
@@ -1170,13 +1052,11 @@ export default function App() {
     <>
       <style>{glowPulse}</style>
 
-      {/* Background layers */}
       <div className="cosmos-bg" />
       <div className="grid-lines" />
       <div className="floating-orb" style={{ width: 300, height: 300, background: "rgba(0,245,255,0.04)", top: "10%", left: "5%" }} />
       <div className="floating-orb" style={{ width: 400, height: 400, background: "rgba(191,0,255,0.04)", bottom: "10%", right: "5%", animationDelay: "4s" }} />
 
-      {/* Page wrapper */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}>
 
         {/* Header */}
@@ -1189,10 +1069,9 @@ export default function App() {
           </div>
         </div>
 
-        {/* ── TWO-COLUMN LAYOUT ── */}
         <div className="two-col-layout">
 
-          {/* ── LEFT: Controls Panel ── */}
+          {/* LEFT: Controls Panel */}
           <div className="glass-card left-panel">
             <div className="corner-decor corner-tl" />
             <div className="corner-decor corner-tr" />
@@ -1217,18 +1096,53 @@ export default function App() {
               </label>
             </div>
 
-            {/* Camera button */}
-            <button className="neon-btn btn-purple" onClick={startCamera} style={{ width: "100%" }}>
-              ⬡ &nbsp; Open Camera Module
-            </button>
+            {/* ✅ Camera button — open with front cam by default */}
+            {!cameraOn && (
+              <button className="neon-btn btn-purple" onClick={() => startCamera("user")} style={{ width: "100%" }}>
+                ⬡ &nbsp; Open Camera Module
+              </button>
+            )}
 
-            {/* ✅ Camera view — ref only, useEffect srcObject set karega */}
+            {/* ✅ Camera view with switch + capture */}
             {cameraOn && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                {/* Video — no mirror (transform: none in CSS) */}
                 <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
-                <button className="neon-btn btn-pink" onClick={capturePhoto} style={{ width: "100%" }}>
-                  ◉ &nbsp; Capture Frame
-                </button>
+
+                {/* Camera controls row */}
+                <div className="camera-controls">
+                  {/* Switch camera button */}
+                  <button
+                    className="neon-btn btn-cyan"
+                    onClick={switchCamera}
+                    style={{ flex: 1, fontSize: "0.65rem" }}
+                    title={facingMode === "user" ? "Switch to Back Camera" : "Switch to Front Camera"}
+                  >
+                    🔄 &nbsp; {facingMode === "user" ? "Back Cam" : "Front Cam"}
+                  </button>
+
+                  {/* Capture button */}
+                  <button
+                    className="neon-btn btn-pink"
+                    onClick={capturePhoto}
+                    style={{ flex: 1, fontSize: "0.65rem" }}
+                  >
+                    ◉ &nbsp; Capture
+                  </button>
+
+                  {/* Close camera button */}
+                  <button
+                    className="neon-btn btn-purple"
+                    onClick={() => {
+                      videoStream?.getTracks().forEach((t) => t.stop());
+                      setCameraOn(false);
+                      setVideoStream(null);
+                    }}
+                    style={{ flex: 1, fontSize: "0.65rem" }}
+                  >
+                    ✕ &nbsp; Close
+                  </button>
+                </div>
               </div>
             )}
 
@@ -1288,7 +1202,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Original + Processed thumbnails */}
+            {/* Thumbnails */}
             {(image || removedBg) && (
               <>
                 <div className="section-divider" />
@@ -1312,10 +1226,9 @@ export default function App() {
                 </div>
               </>
             )}
+          </div>
 
-          </div>{/* end left-panel */}
-
-          {/* ── RIGHT: A4 Preview Panel ── */}
+          {/* RIGHT: A4 Preview Panel */}
           <div className="glass-card right-panel">
             <div className="corner-decor corner-tl" />
             <div className="corner-decor corner-tr" />
@@ -1329,9 +1242,7 @@ export default function App() {
                 <div className="a4-frame">
                   <img src={finalSheet} alt="A4 Sheet" />
                 </div>
-
                 <div className="section-divider" />
-
                 <div className="action-btns">
                   <button className="neon-btn btn-green" onClick={handleDownload} style={{ width: "100%" }}>
                     ↓ &nbsp; Download
@@ -1342,7 +1253,6 @@ export default function App() {
                 </div>
               </>
             ) : (
-              /* Empty state */
               <div className="a4-frame" style={{ opacity: 0.25, flexDirection: "column", gap: 16 }}>
                 <div style={{ fontSize: "3rem", filter: "drop-shadow(0 0 10px rgba(0,245,255,0.4))" }}>⬡</div>
                 <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.55rem", color: "var(--neon-cyan)", letterSpacing: 3, textAlign: "center", lineHeight: 2.2 }}>
@@ -1350,9 +1260,9 @@ export default function App() {
                 </div>
               </div>
             )}
-          </div>{/* end right-panel */}
+          </div>
 
-        </div>{/* end two-col-layout */}
+        </div>
 
         {/* Footer */}
         <div style={{ textAlign: "center", marginTop: 16, fontFamily: "Orbitron, monospace", fontSize: "0.5rem", color: "rgba(255,255,255,0.12)", letterSpacing: 4 }}>
@@ -1361,13 +1271,12 @@ export default function App() {
 
       </div>
 
-      {/* ── CROP MODAL ── */}
+      {/* CROP MODAL */}
       {cropModalOpen && (
         <div className="crop-overlay">
           <div className="crop-modal">
             <div className="crop-title">✂ Crop Your Photo</div>
             <div className="crop-hint">Drag to move • Pull corners/edges to resize • Draw new area on blank space</div>
-
             <div
               className="crop-canvas-wrapper"
               onMouseDown={onCropMouseDown}
@@ -1378,7 +1287,6 @@ export default function App() {
               onTouchMove={onCropMouseMove}
               onTouchEnd={onCropMouseUp}
             >
-              {/* Hidden img for drawing */}
               <img
                 ref={cropImgRef}
                 src={cropImageSrc}
@@ -1388,7 +1296,6 @@ export default function App() {
               />
               <canvas ref={cropCanvasRef} style={{ display: "block", maxWidth: "100%", touchAction: "none" }} />
             </div>
-
             <div className="crop-actions">
               <button className="neon-btn btn-pink" onClick={() => { setCropModalOpen(false); setCropImageSrc(null); }} style={{ width: "100%", fontSize: "0.6rem" }}>
                 ✕ &nbsp; Cancel
