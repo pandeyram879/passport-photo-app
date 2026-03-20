@@ -376,6 +376,7 @@ body {
   border-radius: 12px;
   border: 1px solid rgba(191,0,255,0.4);
   box-shadow: 0 0 20px rgba(191,0,255,0.2);
+  transform: none; /* ✅ NO mirror */
 }
 
 .corner-decor {
@@ -452,6 +453,13 @@ body {
   0%, 100% { transform: translate(0, 0); }
   33% { transform: translate(20px, -20px); }
   66% { transform: translate(-15px, 15px); }
+}
+
+/* ✅ Camera controls row */
+.camera-controls {
+  display: flex;
+  gap: 8px;
+  width: 100%;
 }
 
 /* ===========================
@@ -660,6 +668,9 @@ body {
     font-size: 0.5rem;
     letter-spacing: 2px;
   }
+  .camera-controls {
+    flex-wrap: wrap;
+  }
 }
 
 /* ===========================
@@ -801,6 +812,8 @@ export default function App() {
   const [cameraOn, setCameraOn] = useState(false);
   const [videoStream, setVideoStream] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  // ✅ NEW: track facing mode
+  const [facingMode, setFacingMode] = useState("user");
   const videoRef = useRef(null);
 
   // Crop states
@@ -818,7 +831,7 @@ export default function App() {
     offsetX: 0, offsetY: 0,
   });
 
-  const API_KEY = "oAAibCneuLMLwo2jiyu7XTuR";
+  const API_KEY = "moum62XnZawhRhHRc6ictmMz";
 
   const bgOptions = [
     { color: "white", display: "#ffffff", label: "White" },
@@ -1029,7 +1042,8 @@ export default function App() {
   // ── ORIGINAL processFile (called after crop or skip) ─────
   const processFile = async (file) => {
     if (!file) return;
-    setImage(URL.createObjectURL(file));
+    const originalUrl = URL.createObjectURL(file);
+    setImage(originalUrl);
     setLoading(true);
     setFinalSheet(null);
     setRemovedBg(null);
@@ -1043,12 +1057,23 @@ export default function App() {
         headers: { "X-Api-Key": API_KEY },
         body: formData,
       });
+
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
+
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setRemovedBg(url);
-      generateSheet(url, copies, bgColor, customWidth, customHeight);
-    } catch {
-      alert("Error removing background 😢");
+      // Convert blob to base64 data URL for reliable rendering
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result;
+        setRemovedBg(dataUrl);
+        generateSheet(dataUrl, copies, bgColor, customWidth, customHeight);
+      };
+      reader.readAsDataURL(blob);
+
+    } catch (err) {
+      alert("Error removing background 😢 " + err.message);
     }
     setLoading(false);
   };
@@ -1061,10 +1086,16 @@ export default function App() {
     openCropModal(e.dataTransfer.files[0]);
   };
 
-  // ✅ CAMERA FIX: sirf state set karo, useEffect srcObject handle karega
-  const startCamera = async () => {
+  // ✅ startCamera — accepts facing mode, stops old stream first
+  const startCamera = async (facing = "user") => {
+    if (videoStream) {
+      videoStream.getTracks().forEach((t) => t.stop());
+    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing },
+      });
+      setFacingMode(facing);
       setVideoStream(stream);
       setCameraOn(true);
     } catch (err) {
@@ -1072,12 +1103,27 @@ export default function App() {
     }
   };
 
+  // ✅ switchCamera — toggle front/back
+  const switchCamera = () => {
+    const newFacing = facingMode === "user" ? "environment" : "user";
+    startCamera(newFacing);
+  };
+
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+    const ctx = canvas.getContext("2d");
+
+    if (facingMode === "user") {
+      // ✅ Front camera: flip horizontally to correct mirror effect
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+
+    ctx.drawImage(video, 0, 0);
+
     canvas.toBlob((blob) => {
       const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
       videoStream.getTracks().forEach((t) => t.stop());
@@ -1217,18 +1263,28 @@ export default function App() {
               </label>
             </div>
 
-            {/* Camera button */}
-            <button className="neon-btn btn-purple" onClick={startCamera} style={{ width: "100%" }}>
-              ⬡ &nbsp; Open Camera Module
-            </button>
+            {/* ✅ Camera open button — hidden when camera is on */}
+            {!cameraOn && (
+              <button className="neon-btn btn-purple" onClick={() => startCamera("user")} style={{ width: "100%" }}>
+                ⬡ &nbsp; Open Camera Module
+              </button>
+            )}
 
-            {/* ✅ Camera view — ref only, useEffect srcObject set karega */}
+            {/* ✅ Camera view with switch + capture + close */}
             {cameraOn && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
                 <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
-                <button className="neon-btn btn-pink" onClick={capturePhoto} style={{ width: "100%" }}>
-                  ◉ &nbsp; Capture Frame
-                </button>
+                <div className="camera-controls">
+                  <button className="neon-btn btn-cyan" onClick={switchCamera} style={{ flex: 1, fontSize: "0.6rem" }}>
+                    🔄 {facingMode === "user" ? "Back" : "Front"}
+                  </button>
+                  <button className="neon-btn btn-pink" onClick={capturePhoto} style={{ flex: 1, fontSize: "0.6rem" }}>
+                    ◉ Capture
+                  </button>
+                  <button className="neon-btn btn-purple" onClick={() => { videoStream?.getTracks().forEach((t) => t.stop()); setCameraOn(false); setVideoStream(null); }} style={{ flex: 1, fontSize: "0.6rem" }}>
+                    ✕ Close
+                  </button>
+                </div>
               </div>
             )}
 
@@ -1296,16 +1352,16 @@ export default function App() {
                   {image && (
                     <div style={{ flex: "0 0 auto", textAlign: "center" }}>
                       <div className="photo-label" style={{ color: "rgba(255,255,255,0.35)" }}>Original</div>
-                      <div className="photo-preview" style={{ width: 100 }}>
-                        <img src={image} alt="original" />
+                      <div className="photo-preview" style={{ width: 100, minHeight: 100 }}>
+                        <img key={image} src={image} alt="original" style={{ width: "100%", height: "auto", display: "block" }} />
                       </div>
                     </div>
                   )}
                   {removedBg && (
                     <div style={{ flex: "0 0 auto", textAlign: "center" }}>
                       <div className="photo-label" style={{ color: "rgba(0,245,255,0.8)" }}>Processed</div>
-                      <div className="photo-preview" style={{ width: 100, background: "rgba(255,255,255,0.05)" }}>
-                        <img src={removedBg} alt="processed" />
+                      <div className="photo-preview" style={{ width: 100, minHeight: 100, background: "#ffffff" }}>
+                        <img key={removedBg} src={removedBg} alt="processed" style={{ width: "100%", height: "auto", display: "block" }} />
                       </div>
                     </div>
                   )}
