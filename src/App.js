@@ -1,11 +1,4 @@
-import { useState, useRef, useEffect } from "react";
-
-const NEON_COLORS = {
-  cyan: "#00f5ff",
-  purple: "#bf00ff",
-  pink: "#ff006e",
-  green: "#39ff14",
-};
+import { useState, useRef } from "react";
 
 const glowPulse = `
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
@@ -736,7 +729,6 @@ export default function App() {
   const [cameraOn, setCameraOn] = useState(false);
   const [videoStream, setVideoStream] = useState(null);
   const [dragOver, setDragOver] = useState(false);
-  const [phase, setPhase] = useState("idle"); // idle | removing | done
   const videoRef = useRef(null);
 
   const API_KEY = "oAAibCneuLMLwo2jiyu7XTuR";
@@ -751,7 +743,6 @@ export default function App() {
   const processFile = async (file) => {
     if (!file) return;
     setImage(URL.createObjectURL(file));
-    setPhase("removing");
     setLoading(true);
     setFinalSheet(null);
     setRemovedBg(null);
@@ -769,10 +760,8 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       setRemovedBg(url);
       generateSheet(url, copies, bgColor, customWidth, customHeight);
-      setPhase("done");
     } catch {
       alert("Error removing background 😢");
-      setPhase("idle");
     }
     setLoading(false);
   };
@@ -1026,7 +1015,7 @@ export default function App() {
                     <div style={{ flex: "0 0 auto", textAlign: "center" }}>
                       <div className="photo-label" style={{ color: "rgba(255,255,255,0.35)" }}>Original</div>
                       <div className="photo-preview" style={{ width: 100 }}>
-                        <img src={image} style={{ width: "100%", display: "block" }} />
+                        <img src={image} alt="original" />
                       </div>
                     </div>
                   )}
@@ -1034,7 +1023,7 @@ export default function App() {
                     <div style={{ flex: "0 0 auto", textAlign: "center" }}>
                       <div className="photo-label" style={{ color: "rgba(0,245,255,0.8)" }}>Processed</div>
                       <div className="photo-preview" style={{ width: 100, background: "rgba(255,255,255,0.05)" }}>
-                        <img src={removedBg} style={{ width: "100%", display: "block" }} />
+                        <img src={removedBg} alt="processed" />
                       </div>
                     </div>
                   )}
