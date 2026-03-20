@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const glowPulse = `
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
@@ -715,7 +715,79 @@ html, body {
   max-width: 100vw;
 }
 
+/* ===========================
+   CROP MODAL
+   =========================== */
+.crop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.crop-modal {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,245,255,0.25);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 600px;
+  box-shadow: 0 0 60px rgba(0,245,255,0.1), 0 0 120px rgba(191,0,255,0.08);
+}
+
+.crop-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  text-align: center;
+}
+
+.crop-canvas-wrapper {
+  position: relative;
+  cursor: crosshair;
+  user-select: none;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0,245,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 60vh;
+}
+
+.crop-canvas-wrapper canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.crop-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.crop-hint {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  letter-spacing: 1px;
+}
 `;
+
 
 export default function App() {
   const [image, setImage] = useState(null);
@@ -731,6 +803,21 @@ export default function App() {
   const [dragOver, setDragOver] = useState(false);
   const videoRef = useRef(null);
 
+  // Crop states
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [cropFile, setCropFile] = useState(null);
+  const cropCanvasRef = useRef(null);
+  const cropImgRef = useRef(null);
+  const cropStateRef = useRef({
+    dragging: false, resizing: false, handle: null,
+    startX: 0, startY: 0,
+    rect: { x: 0, y: 0, w: 0, h: 0 },
+    imgNaturalW: 0, imgNaturalH: 0,
+    displayW: 0, displayH: 0,
+    offsetX: 0, offsetY: 0,
+  });
+
   const API_KEY = "oAAibCneuLMLwo2jiyu7XTuR";
 
   const bgOptions = [
@@ -740,6 +827,206 @@ export default function App() {
     { color: "red", display: "#cc0000", label: "Red" },
   ];
 
+  // ✅ CAMERA FIX: video element DOM mein aane ke baad stream attach karo
+  useEffect(() => {
+    if (cameraOn && videoStream && videoRef.current) {
+      videoRef.current.srcObject = videoStream;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [cameraOn, videoStream]);
+
+  // ── CROP LOGIC ──────────────────────────────────────────
+
+  const openCropModal = (file) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropImageSrc(url);
+    setCropFile(file);
+    setCropModalOpen(true);
+  };
+
+  const initCropCanvas = (imgEl) => {
+    const canvas = cropCanvasRef.current;
+    if (!canvas || !imgEl) return;
+    const maxW = Math.min(550, window.innerWidth - 80);
+    const maxH = Math.min(window.innerHeight * 0.55);
+    const ratio = Math.min(maxW / imgEl.naturalWidth, maxH / imgEl.naturalHeight, 1);
+    const dW = Math.floor(imgEl.naturalWidth * ratio);
+    const dH = Math.floor(imgEl.naturalHeight * ratio);
+    canvas.width = dW;
+    canvas.height = dH;
+    const s = cropStateRef.current;
+    s.imgNaturalW = imgEl.naturalWidth;
+    s.imgNaturalH = imgEl.naturalHeight;
+    s.displayW = dW;
+    s.displayH = dH;
+    // Default crop: center 80%
+    s.rect = { x: dW * 0.1, y: dH * 0.1, w: dW * 0.8, h: dH * 0.8 };
+    drawCrop();
+  };
+
+  const drawCrop = () => {
+    const canvas = cropCanvasRef.current;
+    const img = cropImgRef.current;
+    if (!canvas || !img) return;
+    const ctx = canvas.getContext("2d");
+    const { displayW: dW, displayH: dH, rect } = cropStateRef.current;
+    ctx.clearRect(0, 0, dW, dH);
+    ctx.drawImage(img, 0, 0, dW, dH);
+    // Dark overlay outside crop
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 0, dW, dH);
+    // Clear crop area
+    ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.drawImage(img, 0, 0, dW, dH);
+    ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.drawImage(img, 0, 0, dW, dH);
+    // Re-draw just crop area from image
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    ctx.clip();
+    ctx.drawImage(img, 0, 0, dW, dH);
+    ctx.restore();
+    // Crop border
+    ctx.strokeStyle = "rgba(0,245,255,0.9)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    // Rule of thirds grid
+    ctx.strokeStyle = "rgba(0,245,255,0.25)";
+    ctx.lineWidth = 0.5;
+    for (let i = 1; i <= 2; i++) {
+      ctx.beginPath(); ctx.moveTo(rect.x + (rect.w / 3) * i, rect.y); ctx.lineTo(rect.x + (rect.w / 3) * i, rect.y + rect.h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(rect.x, rect.y + (rect.h / 3) * i); ctx.lineTo(rect.x + rect.w, rect.y + (rect.h / 3) * i); ctx.stroke();
+    }
+    // Corner handles
+    const hs = 8;
+    const corners = [
+      [rect.x, rect.y], [rect.x + rect.w, rect.y],
+      [rect.x, rect.y + rect.h], [rect.x + rect.w, rect.y + rect.h],
+    ];
+    corners.forEach(([cx, cy]) => {
+      ctx.fillStyle = "var(--neon-cyan, #00f5ff)";
+      ctx.shadowColor = "#00f5ff";
+      ctx.shadowBlur = 8;
+      ctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
+      ctx.shadowBlur = 0;
+    });
+    // Edge handles
+    const edges = [
+      [rect.x + rect.w / 2, rect.y], [rect.x + rect.w / 2, rect.y + rect.h],
+      [rect.x, rect.y + rect.h / 2], [rect.x + rect.w, rect.y + rect.h / 2],
+    ];
+    edges.forEach(([cx, cy]) => {
+      ctx.fillStyle = "rgba(0,245,255,0.7)";
+      ctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
+    });
+  };
+
+  const getHandle = (mx, my) => {
+    const { rect } = cropStateRef.current;
+    const hs = 12;
+    const pts = {
+      tl: [rect.x, rect.y], tr: [rect.x + rect.w, rect.y],
+      bl: [rect.x, rect.y + rect.h], br: [rect.x + rect.w, rect.y + rect.h],
+      tm: [rect.x + rect.w / 2, rect.y], bm: [rect.x + rect.w / 2, rect.y + rect.h],
+      ml: [rect.x, rect.y + rect.h / 2], mr: [rect.x + rect.w, rect.y + rect.h / 2],
+    };
+    for (const [key, [px, py]] of Object.entries(pts)) {
+      if (Math.abs(mx - px) <= hs && Math.abs(my - py) <= hs) return key;
+    }
+    return null;
+  };
+
+  const getCanvasPos = (e) => {
+    const canvas = cropCanvasRef.current;
+    const bounds = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - bounds.left) * (canvas.width / bounds.width),
+      y: (clientY - bounds.top) * (canvas.height / bounds.height),
+    };
+  };
+
+  const onCropMouseDown = (e) => {
+    e.preventDefault();
+    const { x, y } = getCanvasPos(e);
+    const s = cropStateRef.current;
+    const handle = getHandle(x, y);
+    if (handle) {
+      s.resizing = true; s.handle = handle;
+    } else if (x >= s.rect.x && x <= s.rect.x + s.rect.w && y >= s.rect.y && y <= s.rect.y + s.rect.h) {
+      s.dragging = true;
+    } else {
+      // Start new crop
+      s.resizing = true; s.handle = "br";
+      s.rect = { x, y, w: 0, h: 0 };
+    }
+    s.startX = x; s.startY = y;
+  };
+
+  const onCropMouseMove = (e) => {
+    e.preventDefault();
+    const s = cropStateRef.current;
+    if (!s.dragging && !s.resizing) return;
+    const { x, y } = getCanvasPos(e);
+    const dx = x - s.startX, dy = y - s.startY;
+    const { displayW: dW, displayH: dH } = s;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const minSize = 20;
+
+    if (s.dragging) {
+      s.rect.x = clamp(s.rect.x + dx, 0, dW - s.rect.w);
+      s.rect.y = clamp(s.rect.y + dy, 0, dH - s.rect.h);
+    } else if (s.resizing) {
+      const r = { ...s.rect };
+      const h = s.handle;
+      if (h.includes("r")) r.w = clamp(r.w + dx, minSize, dW - r.x);
+      if (h.includes("b")) r.h = clamp(r.h + dy, minSize, dH - r.y);
+      if (h.includes("l")) { const nw = clamp(r.w - dx, minSize, r.x + r.w); r.x = r.x + r.w - nw; r.w = nw; }
+      if (h.includes("t")) { const nh = clamp(r.h - dy, minSize, r.y + r.h); r.y = r.y + r.h - nh; r.h = nh; }
+      if (h === "tm" || h === "bm") r.x = s.rect.x;
+      if (h === "ml" || h === "mr") r.y = s.rect.y;
+      s.rect = r;
+    }
+    s.startX = x; s.startY = y;
+    drawCrop();
+  };
+
+  const onCropMouseUp = () => {
+    cropStateRef.current.dragging = false;
+    cropStateRef.current.resizing = false;
+  };
+
+  const applyCrop = () => {
+    const s = cropStateRef.current;
+    const img = cropImgRef.current;
+    if (!img) return;
+    const scaleX = s.imgNaturalW / s.displayW;
+    const scaleY = s.imgNaturalH / s.displayH;
+    const sx = s.rect.x * scaleX, sy = s.rect.y * scaleY;
+    const sw = s.rect.w * scaleX, sh = s.rect.h * scaleY;
+    const out = document.createElement("canvas");
+    out.width = sw; out.height = sh;
+    out.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+    out.toBlob((blob) => {
+      const croppedFile = new File([blob], cropFile?.name || "cropped.jpg", { type: "image/jpeg" });
+      setCropModalOpen(false);
+      setCropImageSrc(null);
+      processFile(croppedFile);
+    }, "image/jpeg", 0.95);
+  };
+
+  const skipCrop = () => {
+    const file = cropFile;
+    setCropModalOpen(false);
+    setCropImageSrc(null);
+    processFile(file);
+  };
+
+  // ── ORIGINAL processFile (called after crop or skip) ─────
   const processFile = async (file) => {
     if (!file) return;
     setImage(URL.createObjectURL(file));
@@ -766,28 +1053,24 @@ export default function App() {
     setLoading(false);
   };
 
-  const handleUpload = (e) => processFile(e.target.files[0]);
+  const handleUpload = (e) => openCropModal(e.target.files[0]);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    processFile(e.dataTransfer.files[0]);
+    openCropModal(e.dataTransfer.files[0]);
   };
 
+  // ✅ CAMERA FIX: sirf state set karo, useEffect srcObject handle karega
   const startCamera = async () => {
-  if (typeof window === "undefined" || !navigator.mediaDevices) {
-    alert("Camera not supported in this environment");
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    setVideoStream(stream);
-    setCameraOn(true);
-  } catch (err) {
-    alert("Camera access denied ❌");
-  }
-};
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      setVideoStream(stream);
+      setCameraOn(true);
+    } catch (err) {
+      alert("Camera access denied or unavailable 📷");
+    }
+  };
 
   const capturePhoto = () => {
     const video = videoRef.current;
@@ -796,10 +1079,12 @@ export default function App() {
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
     canvas.toBlob((blob) => {
-      processFile(new File([blob], "capture.jpg", { type: "image/jpeg" }));
+      const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+      videoStream.getTracks().forEach((t) => t.stop());
+      setCameraOn(false);
+      setVideoStream(null);
+      openCropModal(file);
     });
-    videoStream.getTracks().forEach((t) => t.stop());
-    setCameraOn(false);
   };
 
   const generateSheet = (imgUrl, copiesCount, background, w, h) => {
@@ -831,23 +1116,20 @@ export default function App() {
   };
 
   const handleCopiesChange = (e) => {
-  const value = e.target.value;
-
-  // allow empty
-  if (value === "") {
-    setCopies("");
-    return;
-  }
-
-  const num = parseInt(value);
-  if (!isNaN(num)) {
-    setCopies(num);
-
-    if (removedBg) {
-      generateSheet(removedBg, num, bgColor, customWidth, customHeight);
+    const value = e.target.value;
+    // allow empty
+    if (value === "") {
+      setCopies("");
+      return;
     }
-  }
-};
+    const num = parseInt(value);
+    if (!isNaN(num)) {
+      setCopies(num);
+      if (removedBg) {
+        generateSheet(removedBg, num, bgColor, customWidth, customHeight);
+      }
+    }
+  };
 
   const handleBgChange = (color) => {
     setBgColor(color);
@@ -940,10 +1222,10 @@ export default function App() {
               ⬡ &nbsp; Open Camera Module
             </button>
 
-            {/* Camera view */}
+            {/* ✅ Camera view — ref only, useEffect srcObject set karega */}
             {cameraOn && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-                <video ref={videoRef} autoPlay className="camera-video" />
+                <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
                 <button className="neon-btn btn-pink" onClick={capturePhoto} style={{ width: "100%" }}>
                   ◉ &nbsp; Capture Frame
                 </button>
@@ -1078,6 +1360,50 @@ export default function App() {
         </div>
 
       </div>
+
+      {/* ── CROP MODAL ── */}
+      {cropModalOpen && (
+        <div className="crop-overlay">
+          <div className="crop-modal">
+            <div className="crop-title">✂ Crop Your Photo</div>
+            <div className="crop-hint">Drag to move • Pull corners/edges to resize • Draw new area on blank space</div>
+
+            <div
+              className="crop-canvas-wrapper"
+              onMouseDown={onCropMouseDown}
+              onMouseMove={onCropMouseMove}
+              onMouseUp={onCropMouseUp}
+              onMouseLeave={onCropMouseUp}
+              onTouchStart={onCropMouseDown}
+              onTouchMove={onCropMouseMove}
+              onTouchEnd={onCropMouseUp}
+            >
+              {/* Hidden img for drawing */}
+              <img
+                ref={cropImgRef}
+                src={cropImageSrc}
+                alt="crop-source"
+                style={{ display: "none" }}
+                onLoad={(e) => initCropCanvas(e.target)}
+              />
+              <canvas ref={cropCanvasRef} style={{ display: "block", maxWidth: "100%", touchAction: "none" }} />
+            </div>
+
+            <div className="crop-actions">
+              <button className="neon-btn btn-pink" onClick={() => { setCropModalOpen(false); setCropImageSrc(null); }} style={{ width: "100%", fontSize: "0.6rem" }}>
+                ✕ &nbsp; Cancel
+              </button>
+              <button className="neon-btn btn-purple" onClick={skipCrop} style={{ width: "100%", fontSize: "0.6rem" }}>
+                ⬡ &nbsp; Skip Crop
+              </button>
+              <button className="neon-btn btn-green" onClick={applyCrop} style={{ width: "100%", fontSize: "0.6rem" }}>
+                ✓ &nbsp; Apply Crop
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
